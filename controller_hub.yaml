@@ -52,7 +52,6 @@ ota:
 # Wi-Fi Configuration: Connects the device to Wi-Fi
 # Only enabled if use_ethernet is set to "false"
 # -------------------------------------------------
-# Wi-Fi Configuration (only included if Ethernet is not in use)
 ${use_ethernet == "false" ? "
 wifi:
   ssid: !secret wifi_ssid
@@ -65,7 +64,6 @@ wifi:
 # Ethernet Configuration: W5500 Module
 # Only enabled if use_ethernet is set to "true"
 # -------------------------------------------------
-# Ethernet Configuration (only included if Ethernet is enabled)
 ${use_ethernet == "true" ? "
 ethernet:
   type: W5500
@@ -76,6 +74,7 @@ ethernet:
   interrupt_pin: GPIO10
   reset_pin: GPIO3
 " : "# Ethernet is disabled"}
+
 
 # -------------------------------------------------
 # I²C Setup for OLED Display & Future Sensors
