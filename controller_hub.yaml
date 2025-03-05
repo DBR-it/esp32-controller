@@ -17,7 +17,6 @@
 # -------------------------------------------------
 substitutions:
   device_name: "smart_controller"                     # Main name for the ESPHome device
-  use_ethernet: "false"                               # Set to "true" to enable Ethernet
   fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
   fallback_password: "DefaultPassword123"             # Password for fallback AP
   ota_password: "2eac13bfeea21fd59a7926e874d5127a"    # OTA password
@@ -118,32 +117,57 @@ display:
       - id: page1
         lambda: |-
           static int load_time = 0;
-          if (load_time < 15) {
+          static float last_signal_strength = -100.0;
+          static int last_uptime_minutes = -1;
+
+          if (id(ip_address).state.empty() || load_time < 15) {
             // Loading animation with a progress bar
             it.clear();
             load_time++;
             int progress = (load_time * 100) / 15; // Load time in seconds
             if (progress > 100) progress = 100;
-            // Draw a progress bar with a border
-            it.rectangle(10, 20, 108, 10);
-            it.filled_rectangle(12, 22, (104 * progress) / 100, 6);
-            // Display percentage loading
-            it.printf(54, 5, id(font1), "%d%%", progress);
-          } else {
-            // Show device name, IP, and network info
-            it.clear();
-            it.printf(0, 0, id(font1), "Device: ${device_name}");
-            it.printf(0, 12, id(font1), "IP: %s", id(ip_address).state.c_str());
-              // Display Wi-Fi signal strength
-              float strength = id(wifi_signal_sensor).state;
-              it.printf(0, 24, id(font1), "WiFi: %.1f dBm", strength);
-            } else {
-              // Display Ethernet status
-              it.printf(0, 24, id(font1), "Ethernet: Connected");
-            }
-          }
 
+            // Draw a simple square border around the loading bar
+            it.rectangle(10, 20, 108, 10);  // Border for the progress bar
+
+            // Draw the progress bar fill
+            it.filled_rectangle(12, 22, (104 * progress) / 100, 6); // Progress fill
+
+            // Center the percentage display above the bar
+            it.printf(54, 5, id(font1), "%d%%", progress); // Percentage text
+          } else {
+            // Display Wi-Fi signal strength as bars only if the signal has changed significantly
+            it.clear();
+            float strength = id(wifi_signal_sensor).state;
+            int x = 0;
+            int y = 15;
+
+            // Only update if the signal strength changes by more than 5 dBm
+            if (abs(strength - last_signal_strength) > 5) {
+                last_signal_strength = strength;
+            }
+
+            // Draw signal strength bars based on Wi-Fi strength
+            if (strength > -80) it.filled_rectangle(x + 10, y - 4, 3, 4);    // Bar 1
+            if (strength > -70) it.filled_rectangle(x + 15, y - 6, 3, 6);   // Bar 2
+            if (strength > -60) it.filled_rectangle(x + 20, y - 8, 3, 8); // Bar 3
+            if (strength > -50) it.filled_rectangle(x + 25, y - 10, 3, 10); // Bar 4
+            if (strength > -40) it.filled_rectangle(x + 30, y - 12, 3, 12); // Bar 5
+
+            // Display IP address above the bottom edge
+            it.printf(0, 22, id(font1), "IP: %s", id(ip_address).state.c_str());
+            
+            // Display the uptime in days, hours, and minutes
+            int uptime_seconds = (int) id(uptime_sensor).state;
+            int days = uptime_seconds / 86400;
+            int hours = (uptime_seconds % 86400) / 3600;
+            int minutes = (uptime_seconds % 3600) / 60;
+            it.printf(70, 5, id(font1), "%dd %dh %dm", days, hours, minutes);
+          }
+      
       - id: empty_page
+        lambda: |-
+          it.clear();
 
 # -------------------------------------------------
 # Binary Sensors for GPIO Inputs (Future Expansion)
