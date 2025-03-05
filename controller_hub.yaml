@@ -1,0 +1,196 @@
+# ===========================================
+# ESP32-C6 Smart Controller
+# ===========================================
+# This configuration is for an ESP32-C6 device that:
+#  - Uses Wi-Fi and supports optional Ethernet (W5500)
+#  - Displays information on an SSD1306 OLED
+#  - Supports Home Assistant integration
+#  - Provides OTA firmware updates
+#  - Exposes a web server on port 80
+#
+# Users can set device names, toggle between Wi-Fi
+# and Ethernet connectivity, and customize display options.
+
+# -------------------------------------------------
+# Substitutions: variables that make the file easier
+# to customize by allowing changes in one place.
+# -------------------------------------------------
+substitutions:
+  device_name: "smart_controller"                     # Main name for the ESPHome device
+  use_ethernet: "false"                               # Set to "true" to enable Ethernet
+  fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
+  fallback_password: "DefaultPassword123"             # Password for fallback AP
+  ota_password: "2eac13a1fd5cd9a79rfxs6e874d5127a"    # OTA password
+  wifi_ssid_var: !secret wifi_ssid                    # Primary Wi-Fi SSID
+  wifi_password_var: !secret wifi_password            # Primary Wi-Fi Password
+  display_switch_name: "Display On/Off"               # Name for the OLED display switch
+  button1_name: "Button 1"                            # Name for Button 1
+  button2_name: "Button 2"                            # Name for Button 2
+  button4_name: "Button 4"                            # Name for Button 4
+
+esphome:
+  name: ${device_name}
+
+esp32:
+  board: esp32-c6-devkitc-1
+  framework:
+    type: esp-idf
+
+# -------------------------------------------------
+# Logger: Enables logs from the device.
+# -------------------------------------------------
+logger:
+
+# -------------------------------------------------
+# OTA: Over-The-Air updates with a password.
+# -------------------------------------------------
+ota:
+  - platform: esphome
+    password: "${ota_password}"
+
+# -------------------------------------------------
+# Wi-Fi Configuration: Connects the device to Wi-Fi
+# Only enabled if use_ethernet is set to "false"
+# -------------------------------------------------
+wifi:
+  ssid: "${wifi_ssid_var}"
+  password: "${wifi_password_var}"
+  enable: !lambda "return ${use_ethernet} == \"false\";"
+
+# -------------------------------------------------
+# Ethernet Configuration: W5500 Module
+# Only enabled if use_ethernet is set to "true"
+# -------------------------------------------------
+ethernet:
+  type: W5500
+  cs_pin: GPIO4
+  mosi_pin: GPIO5
+  miso_pin: GPIO7
+  clk_pin: GPIO6
+  interrupt_pin: GPIO10
+  reset_pin: GPIO3
+  enable: !lambda "return ${use_ethernet} == \"true\";"
+
+# -------------------------------------------------
+# I²C Setup for OLED Display & Future Sensors
+# -------------------------------------------------
+i2c:
+  sda: GPIO18
+  scl: GPIO19
+  scan: true
+
+# -------------------------------------------------
+# Web Server: Allows local access and debugging.
+# -------------------------------------------------
+web_server:
+  port: 80
+
+# -------------------------------------------------
+# Font Configuration for the OLED Display
+# -------------------------------------------------
+font:
+  - file: "fonts/RobotoMono-Regular.ttf"
+    id: font1
+    size: 10
+
+# -------------------------------------------------
+# Display Switch: Allows turning the OLED on/off
+# -------------------------------------------------
+switch:
+  - platform: template
+    name: "${display_switch_name}"
+    id: display_switch
+    optimistic: true
+    restore_mode: ALWAYS_ON
+
+# -------------------------------------------------
+# SSD1306 OLED Display Configuration
+# Displays Wi-Fi or Ethernet status based on config.
+# -------------------------------------------------
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x32"
+    address: 0x3C
+    id: ssd1306_display
+    pages:
+      - id: page1
+        lambda: |-
+          static int load_time = 0;
+          if (load_time < 15) {
+            // Loading animation with a progress bar
+            it.clear();
+            load_time++;
+            int progress = (load_time * 100) / 15; // Load time in seconds
+            if (progress > 100) progress = 100;
+            // Draw a progress bar with a border
+            it.rectangle(10, 20, 108, 10);
+            it.filled_rectangle(12, 22, (104 * progress) / 100, 6);
+            // Display percentage loading
+            it.printf(54, 5, id(font1), "%d%%", progress);
+          } else {
+            // Show device name, IP, and network info
+            it.clear();
+            it.printf(0, 0, id(font1), "Device: ${device_name}");
+            it.printf(0, 12, id(font1), "IP: %s", id(ip_address).state.c_str());
+
+            // Conditional Wi-Fi or Ethernet display
+            if (${use_ethernet} == "false") {
+              // Display Wi-Fi signal strength
+              float strength = id(wifi_signal_sensor).state;
+              it.printf(0, 24, id(font1), "WiFi: %.1f dBm", strength);
+            } else {
+              // Display Ethernet status
+              it.printf(0, 24, id(font1), "Ethernet: Connected");
+            }
+          }
+
+      - id: empty_page
+        lambda: |-
+          it.clear();
+
+# -------------------------------------------------
+# Binary Sensors for GPIO Inputs (Future Expansion)
+# -------------------------------------------------
+binary_sensor:
+  - platform: gpio
+    name: "${button1_name}"
+    pin:
+      number: GPIO13
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    name: "${button2_name}"
+    pin:
+      number: GPIO14
+      mode: INPUT_PULLUP
+
+  - platform: gpio
+    name: "${button4_name}"
+    pin:
+      number: GPIO16
+      mode: INPUT_PULLUP
+
+# -------------------------------------------------
+# Wi-Fi Signal Strength and Uptime Sensors
+# -------------------------------------------------
+sensor:
+  - platform: wifi_signal
+    name: "WiFi Signal Strength"
+    id: wifi_signal_sensor
+    update_interval: 60s
+
+  - platform: uptime
+    name: "Uptime Sensor"
+    id: uptime_sensor
+    update_interval: 60s
+
+# -------------------------------------------------
+# Wi-Fi Info Text Sensor to Display IP Address
+# -------------------------------------------------
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: "IP Address"
+      id: ip_address
+    ssid:
+      name: "WiFi SSID"
