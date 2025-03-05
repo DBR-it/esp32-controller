@@ -1,2 +1,69 @@
-# esp32-controller
-ESP32-C6-based Smart Controller with I²C expansion support, offering GPIO inputs, OLED display integration, Wi-Fi connectivity, and optional Ethernet via W5500 for versatile home automation and sensor control.
+# ESP32-C6 Smart Controller (Package-Based)
+
+This **ESP32-C6 Smart Controller** configuration is published as an **ESPHome package**, allowing you to include it directly from GitHub without copying YAML files locally.
+
+## Usage
+In your **own** ESPHome YAML, add:
+```yaml
+esphome:
+  name: ${device_name}
+
+packages:
+  smart_controller:
+    url: https://github.com/DBR-it/Smart-Controller
+    ref: main
+    files:
+      - smart_controller.yaml
+```
+
+### How It Works
+- The **`packages`** section pulls the YAML configuration directly from GitHub.
+- The **`${device_name}`** is the customizable name for your device in Home Assistant.
+- The configuration is updated automatically based on the `refresh` interval (e.g., `refresh: 1d`).
+
+## Customizing the Controller
+You can override default **substitutions** in your local YAML file:
+```yaml
+substitutions:
+  device_name: "my_smart_controller"
+  use_ethernet: "true"  # Set to "true" for Ethernet or "false" for Wi-Fi
+  display_switch_name: "Display Power"
+  button1_name: "Left Button"
+  button2_name: "Center Button"
+  button4_name: "Right Button"
+  fallback_ssid: "My-Fallback-AP"
+  fallback_password: "AnotherPassword"
+```
+
+### Example Setup
+```yaml
+esphome:
+  name: ${device_name}
+
+packages:
+  smart_controller:
+    url: https://github.com/DBR-it/Smart-Controller
+    ref: main
+    files:
+      - smart_controller.yaml
+
+substitutions:
+  device_name: "my_smart_controller"
+  use_ethernet: "true"
+  display_switch_name: "Display Power"
+  button1_name: "Left Button"
+  button2_name: "Center Button"
+  button4_name: "Right Button"
+  fallback_ssid: "My-Fallback-AP"
+  fallback_password: "AnotherPassword"
+```
+
+## What This Controller Does
+- Uses an **ESP32-C6** with optional **Ethernet (W5500)** or **Wi-Fi**.
+- Displays **IP Address** and **Network Status** on an **SSD1306 OLED**.
+- Supports **Home Assistant** integration and **OTA updates**.
+- Provides a **web server** on port 80 for local access.
+- Allows customization of **button names** and **display controls**.
+
+This approach keeps your local configuration clean and allows automatic updates through the remote package. Feel free to expand on this README or add project-specific details as needed!
+
