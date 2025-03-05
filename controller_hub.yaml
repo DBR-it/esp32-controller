@@ -134,9 +134,6 @@ display:
             it.clear();
             it.printf(0, 0, id(font1), "Device: ${device_name}");
             it.printf(0, 12, id(font1), "IP: %s", id(ip_address).state.c_str());
-
-            // Conditional Wi-Fi or Ethernet display
-            if (${use_ethernet} == "false") {
               // Display Wi-Fi signal strength
               float strength = id(wifi_signal_sensor).state;
               it.printf(0, 24, id(font1), "WiFi: %.1f dBm", strength);
@@ -147,8 +144,6 @@ display:
           }
 
       - id: empty_page
-        lambda: |-
-          it.clear();
 
 # -------------------------------------------------
 # Binary Sensors for GPIO Inputs (Future Expansion)
