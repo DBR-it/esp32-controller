@@ -50,7 +50,7 @@ substitutions:
 esphome:
   name: ${device_name}
   {% if not allow_preprocessor %}
-  # allow_preprocessor: true
+  allow_preprocessor: true
   {% endif %}
 
 # -------------------------------------------------
