@@ -10,10 +10,10 @@ esphome:
 
 packages:
   smart_controller:
-    url: https://github.com/DBR-it/Smart-Controller
+    url: https://github.com/DBR-it/esp32-controller
     ref: main
     files:
-      - smart_controller.yaml
+      - esp32_controller.yaml
 ```
 
 ### How It Works
@@ -45,7 +45,7 @@ packages:
     url: https://github.com/DBR-it/Smart-Controller
     ref: main
     files:
-      - smart_controller.yaml
+      - esp32_controller.yaml
 
 substitutions:
   device_name: "my_smart_controller"
