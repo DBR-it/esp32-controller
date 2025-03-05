@@ -20,8 +20,6 @@ substitutions:
   fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
   fallback_password: "DefaultPassword123"             # Password for fallback AP
   ota_password: "2eac13bfeea21fd59a7926e874d5127a"    # OTA password
-  wifi_ssid: !secret wifi_ssid                        # Primary Wi-Fi SSID
-  wifi_password: !secret wifi_password                # Primary Wi-Fi Password
   display_switch_name: "Display On/Off"               # Name for the OLED display switch
   button1_name: "Button 1"                            # Name for Button 1
   button2_name: "Button 2"                            # Name for Button 2
