@@ -21,12 +21,12 @@ substitutions:
   fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
   fallback_password: "DefaultPassword123"             # Password for fallback AP
   ota_password: "2eac13bfeea21fd59a7926e874d5127a"    # OTA password
-  wifi_ssid_var: !secret wifi_ssid                     # Primary Wi-Fi SSID
-  wifi_password_var: !secret wifi_password             # Primary Wi-Fi Password
+  wifi_ssid: !secret wifi_ssid                        # Primary Wi-Fi SSID
+  wifi_password: !secret wifi_password                # Primary Wi-Fi Password
   display_switch_name: "Display On/Off"               # Name for the OLED display switch
-  button1_name: "Button 1"                             # Name for Button 1
-  button2_name: "Button 2"                             # Name for Button 2
-  button4_name: "Button 4"                             # Name for Button 4
+  button1_name: "Button 1"                            # Name for Button 1
+  button2_name: "Button 2"                            # Name for Button 2
+  button4_name: "Button 4"                            # Name for Button 4
 
 esphome:
   name: ${device_name}
@@ -52,28 +52,25 @@ ota:
 # Wi-Fi Configuration: Connects the device to Wi-Fi
 # Only enabled if use_ethernet is set to "false"
 # -------------------------------------------------
-${use_ethernet == "false" ? "
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   power_save_mode: none
   reboot_timeout: 0s
-" : "# Wi-Fi is disabled"}
 
 # -------------------------------------------------
 # Ethernet Configuration: W5500 Module
 # Only enabled if use_ethernet is set to "true"
 # -------------------------------------------------
-${use_ethernet == "true" ? "
-ethernet:
-  type: W5500
-  cs_pin: GPIO4
-  mosi_pin: GPIO5
-  miso_pin: GPIO7
-  clk_pin: GPIO6
-  interrupt_pin: GPIO10
-  reset_pin: GPIO3
-" : "# Ethernet is disabled"}
+# ethernet:
+#   type: W5500
+#   cs_pin: GPIO4
+#   mosi_pin: GPIO5
+#   miso_pin: GPIO7
+#   clk_pin: GPIO6
+#   interrupt_pin: GPIO10
+#   reset_pin: GPIO3
+
 
 
 # -------------------------------------------------
