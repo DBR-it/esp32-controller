@@ -9,11 +9,11 @@ esphome:
   name: ${device_name}
 
 packages:
-  smart_controller:
+  remote_package_files:
     url: https://github.com/DBR-it/esp32-controller
+    files: [esp32_controller.yaml]
     ref: main
-    files:
-      - esp32_controller.yaml
+    refresh: 10s    
 ```
 
 ### How It Works
@@ -41,11 +41,11 @@ esphome:
   name: ${device_name}
 
 packages:
-  smart_controller:
-    url: https://github.com/DBR-it/Smart-Controller
+  remote_package_files:
+    url: https://github.com/DBR-it/esp32-controller
+    files: [esp32_controller.yaml]
     ref: main
-    files:
-      - esp32_controller.yaml
+    refresh: 10s    
 
 substitutions:
   device_name: "my_smart_controller"
