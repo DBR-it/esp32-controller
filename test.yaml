@@ -49,9 +49,8 @@ substitutions:
 # -------------------------------------------------
 esphome:
   name: ${device_name}
-  {% if not allow_preprocessor %}
   allow_preprocessor: true
-  {% endif %}
+
 
 # -------------------------------------------------
 # Board & Framework: Using ESP32-C6 with ESP-IDF
