@@ -15,7 +15,7 @@
 # to customize by allowing changes in one place.
 # -------------------------------------------------
 substitutions:
-  device_name: "esp32_wifi_controller"                # Main name for the ESPHome device
+  device_name: "esp32-wifi-controller"                # Main name for the ESPHome device
   fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
   fallback_password: "DefaultPassword123"             # Password for fallback AP
   ota_password: "2eac13bfeea21fd59a7926e874d5127a"    # OTA password
