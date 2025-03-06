@@ -56,7 +56,7 @@ substitutions:
 packages:
   remote_package_files:
     url: https://github.com/DBR-it/esp32-controller
-    files: [esp32_ enet_ controller.yaml]
+    files: [esp32_ enet_controller.yaml]
     ref: main
     refresh: 1d 
     
