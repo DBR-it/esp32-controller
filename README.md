@@ -5,9 +5,6 @@ This **ESP32-C6 Smart Controller** configuration is published as an **ESPHome pa
 ## Usage
 In your **own** ESPHome YAML, add:
 ```yaml
-esphome:
-  name: ${device_name}
-
 packages:
   remote_package_files:
     url: https://github.com/DBR-it/esp32-controller
@@ -37,9 +34,6 @@ substitutions:
 
 ### Example Setup Wifi
 ```yaml
-esphome:
-  name: ${device_name}
-
 packages:
   remote_package_files:
     url: https://github.com/DBR-it/esp32-controller
@@ -59,9 +53,6 @@ substitutions:
 ```
 ### Example Setup Ethernet
 ```yaml
-esphome:
-  name: ${device_name}
-
 packages:
   remote_package_files:
     url: https://github.com/DBR-it/esp32-controller
