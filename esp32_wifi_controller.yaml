@@ -87,6 +87,23 @@ switch:
     optimistic: true
     restore_mode: ALWAYS_ON
 
+# Interval to update the display state based on the switch position
+interval:
+  - interval: 30s
+    then:
+      - if:
+          condition:
+            switch.is_on: display_switch
+          then:
+            - logger.log: "Display is ON"
+            - display.page.show: page1
+            - component.update: ssd1306_display
+          else:
+            - logger.log: "Display is OFF"
+            - display.page.show: empty_page
+            - component.update: ssd1306_display
+
+
 # -------------------------------------------------
 # SSD1306 OLED Display Configuration
 # Displays Wi-Fi or Ethernet status based on config.
