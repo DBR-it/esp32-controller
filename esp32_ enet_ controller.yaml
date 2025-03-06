@@ -14,7 +14,7 @@
 # certain values in one place.
 # -------------------------------------------------
 substitutions:
-  device_name: "ethernet_controller"  # Main device name (Home Assistant entity)
+  device_name: "ethernet-controller"  # Main device name (Home Assistant entity)
   display_switch_name: "Display On/Off"
   button1_name: "Button 1"
   button2_name: "Button 2"
