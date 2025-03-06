@@ -18,20 +18,29 @@ packages:
 - The **`${device_name}`** is the customizable name for your device in Home Assistant.
 - The configuration is updated automatically based on the `refresh` interval (e.g., `refresh: 1d`).
 
-## Customizing the Controller
-You can override default **substitutions** in your local YAML file:
+## Customizing the Controller for Wi-Fi
+You can override default **substitutions** in your local YAML file wi-Fi options:
 ```yaml
 substitutions:
-  device_name: "my_smart_controller"
-  use_ethernet: "true"  # Set to "true" for Ethernet or "false" for Wi-Fi
-  display_switch_name: "Display Power"
-  button1_name: "Left Button"
-  button2_name: "Center Button"
-  button4_name: "Right Button"
-  fallback_ssid: "My-Fallback-AP"
-  fallback_password: "AnotherPassword"
+  device_name: "esp32-wifi-controller"                # Main name for the ESPHome device
+  fallback_ssid: "Smart Fallback Hotspot"             # SSID for fallback AP
+  fallback_password: "DefaultPassword123"             # Password for fallback AP
+  ota_password: "2eac13bfeea21fd59a7926e874d5127a"    # OTA password
+  display_switch_name: "Display On/Off"               # Name for the OLED display switch
+  button1_name: "Button 1"                            # Name for Button 1
+  button2_name: "Button 2"                            # Name for Button 2
+  button4_name: "Button 4"                            # Name for Button 4
 ```
-
+## Customizing the Controller for ethernet
+You can override default **substitutions** in your local YAML file Ethernet options:
+```yaml
+substitutions:
+  device_name: "ethernet-controller"  # Main device name (Home Assistant entity)
+  display_switch_name: "Display On/Off"
+  button1_name: "Button 1"
+  button2_name: "Button 2"
+  button4_name: "Button 4"
+```
 ### Example Setup Wifi
 ```yaml
 packages:
