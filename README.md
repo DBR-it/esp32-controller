@@ -13,7 +13,7 @@ packages:
     url: https://github.com/DBR-it/esp32-controller
     files: [esp32_controller.yaml]
     ref: main
-    refresh: 10s    
+    refresh: 1d    
 ```
 
 ### How It Works
@@ -35,7 +35,7 @@ substitutions:
   fallback_password: "AnotherPassword"
 ```
 
-### Example Setup
+### Example Setup Wifi
 ```yaml
 esphome:
   name: ${device_name}
@@ -45,7 +45,7 @@ packages:
     url: https://github.com/DBR-it/esp32-controller
     files: [esp32_controller.yaml]
     ref: main
-    refresh: 10s    
+    refresh: 1d
 
 substitutions:
   device_name: "my_smart_controller"
@@ -57,7 +57,25 @@ substitutions:
   fallback_ssid: "My-Fallback-AP"
   fallback_password: "AnotherPassword"
 ```
+### Example Setup Ethernet
+```yaml
+esphome:
+  name: ${device_name}
 
+packages:
+  remote_package_files:
+    url: https://github.com/DBR-it/esp32-controller
+    files: [esp32_ enet_ controller.yaml]
+    ref: main
+    refresh: 1d 
+    
+substitutions:
+  device_name: "ethernet_controller"  # Main device name (Home Assistant entity)
+  display_switch_name: "Display On/Off"
+  button1_name: "Button 1"
+  button2_name: "Button 2"
+  button4_name: "Button 4"
+```
 ## What This Controller Does
 - Uses an **ESP32-C6** with optional **Ethernet (W5500)** or **Wi-Fi**.
 - Displays **IP Address** and **Network Status** on an **SSD1306 OLED**.
