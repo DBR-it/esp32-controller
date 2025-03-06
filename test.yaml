@@ -1,71 +1,37 @@
-# ===========================================
-# ESP32-C6 Hybrid Controller
-# ===========================================
-# This configuration can switch between:
-#  - Wi-Fi (if use_ethernet = "false")
-#  - Ethernet with W5500 (if use_ethernet = "true")
-#
-# Displays different content on the SSD1306 OLED
-# depending on whether Wi-Fi or Ethernet is active.
-# Also uses fallback AP if Wi-Fi fails.
-# 
-# Adjust the substitutions below and recompile to
-# change modes or rename entities.
-# ===========================================
-
-# -------------------------------------------------
-# Substitutions: variables that can be referenced
-# throughout the config, making it easy to update
-# certain values in one place.
-# -------------------------------------------------
-substitutions:
-  device_name: "smart_controller"                  # Main name for the ESPHome device
-  use_ethernet: "false"                            # Set to "true" to enable Ethernet (W5500), "false" for Wi-Fi
-  fallback_ssid: "Smart Fallback Hotspot"          # SSID for fallback AP if Wi-Fi fails
-  fallback_password: "DefaultPassword123"          # Password for fallback AP
-  ota_password: "2eac13bfeea21fd59a7926e874d5127a" # OTA password
-  display_switch_name: "Display On/Off"            # Name for the OLED display switch
-  button1_name: "Button 1"                         # Name for Button 1
-  button2_name: "Button 2"                         # Name for Button 2
-  button4_name: "Button 4"                         # Name for Button 4
-
-# -------------------------------------------------
-# Primary configuration for the ESPHome device.
-# \"name\" is how Home Assistant recognizes this node.
-# IMPORTANT: If using the Home Assistant Add-on,
-# you may need: allow_preprocessor: true
-# -------------------------------------------------
 esphome:
-  name: ${device_name}
-  allow_preprocessor: true
+  name: my_smart_controller
+  allow_preprocessor: true  # <-- ENABLE JINJA
 
+substitutions:
+  # ~~~~~~~~~~~~~~~~ CUSTOMIZE BELOW ~~~~~~~~~~~~~~~~~~
+  device_name: "my_smart_controller"  # Main name in Home Assistant
+  use_ethernet: "false"               # "true" = Ethernet, "false" = Wi-Fi
+  fallback_ssid: "My Fallback AP"     # AP if Wi-Fi fails
+  fallback_password: "Fallback123"    # Password for fallback AP
+  ota_password: "2eac13bfeea21fd59a7926e874d5127a"
+  display_switch_name: "Display On/Off"
+  button1_name: "Button 1"
+  button2_name: "Button 2"
+  button4_name: "Button 4"
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# -------------------------------------------------
-# Board & Framework: Using ESP32-C6 with ESP-IDF
-# -------------------------------------------------
 esp32:
   board: esp32-c6-devkitc-1
   framework:
     type: esp-idf
 
-# -------------------------------------------------
-# Logger: Enables logs from the device.
-# -------------------------------------------------
 logger:
 
-# -------------------------------------------------
-# OTA: Over-The-Air updates with a password.
-# -------------------------------------------------
+api:
+
 ota:
   - platform: esphome
-    password: "${ota_password}"
+    password: !secret ota_password  # Or you can inline: password: "2eac13bfeea21fd59a7926e874d5127a"
 
-# -------------------------------------------------
-# Conditional Networking:
-# We only include Ethernet if use_ethernet == "true"
-# Otherwise, we enable Wi-Fi.
-# -------------------------------------------------
 {% if use_ethernet == "true" %}
+# -------------------------------------------------
+# Ethernet: W5500
+# -------------------------------------------------
 ethernet:
   type: w5500
   cs_pin: GPIO4
@@ -76,6 +42,9 @@ ethernet:
   reset_pin: GPIO3
 
 {% else %}
+# -------------------------------------------------
+# Wi-Fi Configuration
+# -------------------------------------------------
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
@@ -84,17 +53,16 @@ wifi:
   ap:
     ssid: "${fallback_ssid}"
     password: "${fallback_password}"
-
 {% endif %}
 
 # -------------------------------------------------
-# Web Server: Allows local access on port 80.
+# Web Server for local access and debugging
 # -------------------------------------------------
 web_server:
   port: 80
 
 # -------------------------------------------------
-# I2C Setup for OLED Display & Future Sensors
+# I2C for the SSD1306 display or future sensors
 # -------------------------------------------------
 i2c:
   sda: GPIO18
@@ -102,7 +70,7 @@ i2c:
   scan: true
 
 # -------------------------------------------------
-# Font Configuration for the OLED Display
+# Fonts for the display
 # -------------------------------------------------
 font:
   - file: "fonts/RobotoMono-Regular.ttf"
@@ -110,7 +78,7 @@ font:
     size: 10
 
 # -------------------------------------------------
-# Display Switch: Allows turning the OLED on/off
+# Display Switch
 # -------------------------------------------------
 switch:
   - platform: template
@@ -120,8 +88,7 @@ switch:
     restore_mode: ALWAYS_ON
 
 # -------------------------------------------------
-# SSD1306 OLED Display Configuration
-# We customize what is displayed based on Wi-Fi or Ethernet usage.
+# SSD1306 Display - shows different info depending on Wi-Fi vs. Ethernet
 # -------------------------------------------------
 display:
   - platform: ssd1306_i2c
@@ -129,61 +96,49 @@ display:
     address: 0x3C
     id: ssd1306_display
     pages:
-      - id: page1
+      - id: main_page
         lambda: |-
           it.clear();
-
-          // We'll show different info depending on the mode
           {% if use_ethernet == "true" %}
-          // Just show that we're in Ethernet mode and the IP Address
-          it.printf(0, 0, id(font1), "Ethernet Mode");
-          it.printf(0, 15, id(font1), "IP: %s", id(ip_address).state.c_str());
-
+            // Simple label for Ethernet + IP
+            it.printf(0, 0, id(font1), "Ethernet Mode");
+            it.printf(0, 15, id(font1), "IP: %s", id(ip_address).state.c_str());
           {% else %}
-          // Wi-Fi Mode: show signal strength loading screen and so on
-          static int load_time = 0;
-          static float last_signal_strength = -100.0;
+            // Wi-Fi Mode with a simple loading animation & signal bars
+            static int load_time = 0;
+            static float last_signal_strength = -100.0;
 
-          // If no IP or still loading for first 15 cycles (~15s)
-          if (id(ip_address).state.empty() || load_time < 15) {
-            // Simple loading animation
-            load_time++;
-            int progress = (load_time * 100) / 15;
-            if (progress > 100) progress = 100;
+            if (id(ip_address).state.empty() || load_time < 15) {
+              load_time++;
+              int progress = (load_time * 100) / 15;
+              if (progress > 100) progress = 100;
 
-            // Draw a border & fill for progress bar
-            it.rectangle(10, 20, 108, 10);
-            it.filled_rectangle(12, 22, (104 * progress) / 100, 6);
-
-            // Show percentage
-            it.printf(54, 5, id(font1), "%d%%", progress);
-
-          } else {
-            float strength = id(wifi_signal_sensor).state;
-
-            if (abs(strength - last_signal_strength) > 5) {
+              it.rectangle(10, 20, 108, 10);
+              it.filled_rectangle(12, 22, (104 * progress) / 100, 6);
+              it.printf(54, 5, id(font1), "%d%%", progress);
+            } else {
+              float strength = id(wifi_signal_sensor).state;
+              if (abs(strength - last_signal_strength) > 5) {
                 last_signal_strength = strength;
+              }
+
+              // Draw Wi-Fi bars
+              int x = 0, y = 15;
+              if (strength > -80) it.filled_rectangle(x + 10, y - 4, 3, 4);
+              if (strength > -70) it.filled_rectangle(x + 15, y - 6, 3, 6);
+              if (strength > -60) it.filled_rectangle(x + 20, y - 8, 3, 8);
+              if (strength > -50) it.filled_rectangle(x + 25, y - 10, 3, 10);
+              if (strength > -40) it.filled_rectangle(x + 30, y - 12, 3, 12);
+
+              it.printf(0, 22, id(font1), "IP: %s", id(ip_address).state.c_str());
+
+              // Uptime
+              int uptime_seconds = (int) id(uptime_sensor).state;
+              int days = uptime_seconds / 86400;
+              int hours = (uptime_seconds % 86400) / 3600;
+              int minutes = (uptime_seconds % 3600) / 60;
+              it.printf(70, 5, id(font1), "%dd %dh %dm", days, hours, minutes);
             }
-
-            // Draw Wi-Fi bars
-            int x = 0;
-            int y = 15;
-            if (strength > -80) it.filled_rectangle(x + 10, y - 4, 3, 4);
-            if (strength > -70) it.filled_rectangle(x + 15, y - 6, 3, 6);
-            if (strength > -60) it.filled_rectangle(x + 20, y - 8, 3, 8);
-            if (strength > -50) it.filled_rectangle(x + 25, y - 10, 3, 10);
-            if (strength > -40) it.filled_rectangle(x + 30, y - 12, 3, 12);
-
-            // Show IP
-            it.printf(0, 22, id(font1), "IP: %s", id(ip_address).state.c_str());
-
-            // Display a placeholder or uptime in top-right
-            int uptime_seconds = (int) id(uptime_sensor).state;
-            int days = uptime_seconds / 86400;
-            int hours = (uptime_seconds % 86400) / 3600;
-            int minutes = (uptime_seconds % 3600) / 60;
-            it.printf(70, 5, id(font1), "%dd %dh %dm", days, hours, minutes);
-          }
           {% endif %}
 
       - id: empty_page
@@ -191,7 +146,7 @@ display:
           it.clear();
 
 # -------------------------------------------------
-# Binary Sensors: Example GPIO Inputs
+# Example GPIO Buttons
 # -------------------------------------------------
 binary_sensor:
   - platform: gpio
@@ -219,34 +174,31 @@ binary_sensor:
       - invert:
 
 # -------------------------------------------------
-# Sensors: Wi-Fi or Ethernet mode adjustments
-# We'll define Wi-Fi signal only if use_ethernet == \"false\"
+# Sensors: define Wi-Fi signal only if using Wi-Fi,
+# otherwise skip. Everyone gets an uptime sensor.
 # -------------------------------------------------
 sensor:
   {% if use_ethernet == "true" %}
-  # In Ethernet mode, no Wi-Fi signal sensor
-  # We still define an uptime sensor
   - platform: uptime
-    name: "Uptime (Ethernet)"
     id: uptime_sensor
+    name: "Ethernet Uptime"
     update_interval: 60s
 
   {% else %}
   - platform: wifi_signal
-    name: "WiFi Signal Strength"
     id: wifi_signal_sensor
+    name: "WiFi Signal Strength"
     update_interval: 60s
 
   - platform: uptime
-    name: "Uptime (Wi-Fi)"
     id: uptime_sensor
+    name: "WiFi Uptime"
     update_interval: 60s
   {% endif %}
 
 # -------------------------------------------------
-# Text Sensors: Provide IP address, etc.
-# The 'wifi_info' platform is no issue even if we're on Ethernet;
-# but if you prefer, you could conditionally skip it for Ethernet
+# Text Sensor: Wi-Fi Info for IP Address
+# (Works even if on Ethernet; or you can skip it)
 # -------------------------------------------------
 text_sensor:
   - platform: wifi_info
