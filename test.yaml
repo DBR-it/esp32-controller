@@ -1,15 +1,3 @@
-{% if not allow_preprocessor %}
-# NOTE:
-# If you see an error about unknown directives here, you must enable Jinja
-# preprocessing in your ESPHome environment. For example:
-#
-# esphome:
-#   name: smart_controller
-#   allow_preprocessor: true
-#
-# Then remove these lines after enabling it.
-{% endif %}
-
 # ===========================================
 # ESP32-C6 Hybrid Controller
 # ===========================================
