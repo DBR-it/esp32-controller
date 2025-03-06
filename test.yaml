@@ -36,8 +36,9 @@ logger:
 api:
 
 ota:
-  password: !secret ota_password
-
+  - platform: esphome
+    password: !secret ota_password
+ 
 # -------------------------------------------------
 # Ethernet Configuration (W5500)
 # -------------------------------------------------
